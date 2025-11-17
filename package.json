@@ -1,0 +1,26 @@
+{
+  "name": "ecommerce-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack e-commerce platform with authentication, catalog, and commerce features",
+  "scripts": {
+    "dev": "pnpm --filter \"./apps/**\" dev",
+    "build": "pnpm --filter \"./apps/**\" build",
+    "db:migrate": "pnpm --filter database prisma migrate dev",
+    "db:seed": "pnpm --filter database seed",
+    "db:studio": "pnpm --filter database prisma studio",
+    "db:generate": "pnpm --filter database prisma generate",
+    "db:push": "pnpm --filter database prisma db push",
+    "db:reset": "pnpm --filter database prisma migrate reset"
+  },
+  "keywords": [
+    "ecommerce",
+    "prisma",
+    "nextjs",
+    "express"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
