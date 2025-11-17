@@ -1,0 +1,17 @@
+import { Router } from 'express';
+import { asyncHandler } from '../utils/asyncHandler';
+
+const router = Router();
+
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    });
+  })
+);
+
+export default router;
