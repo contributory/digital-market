@@ -1,63 +1,125 @@
 import Link from 'next/link';
 import { auth } from '@/lib/auth';
+import { Product, Category, ApiResponse } from '@repo/shared';
+import { HeroBanner } from '@/components/home/hero-banner';
+import { FeaturedCategories } from '@/components/home/featured-categories';
+import { ProductCarousel } from '@/components/home/product-carousel';
+import { PromotionalBanner } from '@/components/home/promotional-banner';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+async function getFeaturedProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch(`${API_URL}/products/featured`, {
+      next: { revalidate: 300 },
+    });
+    if (!response.ok) return [];
+    const data: ApiResponse<Product[]> = await response.json();
+    return data.data || [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+async function getTrendingProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch(`${API_URL}/products/trending`, {
+      next: { revalidate: 300 },
+    });
+    if (!response.ok) return [];
+    const data: ApiResponse<Product[]> = await response.json();
+    return data.data || [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+async function getCategories(): Promise<Category[]> {
+  try {
+    const response = await fetch(`${API_URL}/categories`, {
+      next: { revalidate: 300 },
+    });
+    if (!response.ok) return [];
+    const data: ApiResponse<Category[]> = await response.json();
+    return data.data || [];
+  } catch (_error) {
+    return [];
+  }
+}
 
 export default async function Home() {
   const session = await auth();
 
-  return (
-    <div className="container mx-auto py-12 px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-3xl">
-            Welcome to the E-Commerce Platform
-          </CardTitle>
-          <CardDescription>
-            {session
-              ? `Hello, ${session.user.name}! Explore our marketplace.`
-              : 'Sign in to start shopping and access exclusive features.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Features:</h3>
-            <ul className="list-disc list-inside text-muted-foreground space-y-1">
-              <li>User registration and login with JWT tokens</li>
-              <li>Protected routes for authenticated users</li>
-              <li>Role-based access control (Customer / Admin)</li>
-              <li>Automatic token refresh</li>
-              <li>Secure cookie-based session storage</li>
-              <li>Responsive UI with dark mode support</li>
-              <li>Real-time cart updates</li>
-              <li>Accessible components with keyboard navigation</li>
-            </ul>
-          </div>
+  const [featuredProducts, trendingProducts, categories] = await Promise.all([
+    getFeaturedProducts(),
+    getTrendingProducts(),
+    getCategories(),
+  ]);
 
-          <div className="pt-4">
-            <h3 className="text-lg font-semibold mb-3">Quick Actions:</h3>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/products">
-                <Button>Browse Products</Button>
+  return (
+    <div className="container mx-auto py-8 px-4 space-y-12">
+      {/* Hero Banner */}
+      <HeroBanner />
+
+      {/* Featured Categories */}
+      <FeaturedCategories categories={categories} />
+
+      {/* Trending Products */}
+      {trendingProducts.length > 0 && (
+        <ProductCarousel products={trendingProducts} title="Trending Now" />
+      )}
+
+      {/* Promotional Banner */}
+      <PromotionalBanner />
+
+      {/* Featured Products */}
+      {featuredProducts.length > 0 && (
+        <ProductCarousel
+          products={featuredProducts}
+          title="Featured Products"
+        />
+      )}
+
+      {/* Quick Actions */}
+      <section className="text-center py-8">
+        <h2 className="text-2xl font-bold mb-4">
+          {session
+            ? `Welcome back, ${session.user.name || session.user.email}!`
+            : 'Start Your Shopping Journey'}
+        </h2>
+        <p className="text-muted-foreground mb-6">
+          {session
+            ? 'Explore our latest products and exclusive deals'
+            : 'Sign in to access exclusive features and track your orders'}
+        </p>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link href="/products">
+            <Button size="lg">Browse All Products</Button>
+          </Link>
+          {!session && (
+            <>
+              <Link href="/login">
+                <Button size="lg" variant="outline">
+                  Sign In
+                </Button>
               </Link>
-              <Link href="/checkout">
-                <Button variant="secondary">Go to Checkout</Button>
+              <Link href="/register">
+                <Button size="lg" variant="secondary">
+                  Create Account
+                </Button>
               </Link>
-              {session && (
-                <Link href="/account">
-                  <Button variant="outline">View Account</Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </>
+          )}
+          {session && (
+            <Link href="/account">
+              <Button size="lg" variant="outline">
+                My Account
+              </Button>
+            </Link>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
