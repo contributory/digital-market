@@ -1,33 +1,20 @@
+import { Suspense } from 'react';
 import { Metadata } from 'next';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { ProductListingContent } from './product-listing-content';
+import { ProductGridSkeleton } from '@/components/product/product-skeleton';
 
 export const metadata: Metadata = {
-  title: 'Products',
-  description: 'Browse our collection of quality products',
+  title: 'Products | E-Commerce Store',
+  description: 'Browse our wide selection of quality products',
 };
 
 export default function ProductsPage() {
   return (
-    <div className="container mx-auto py-12 px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Products</CardTitle>
-          <CardDescription>
-            Browse our collection of quality products
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Product catalog coming soon...
-          </p>
-        </CardContent>
-      </Card>
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-8">All Products</h1>
+      <Suspense fallback={<ProductGridSkeleton count={12} />}>
+        <ProductListingContent />
+      </Suspense>
     </div>
   );
 }
