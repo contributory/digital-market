@@ -132,7 +132,56 @@ pnpm format
 
 # Check formatting without making changes
 pnpm format:check
+
+# Type check all apps
+pnpm type-check
 ```
+
+### Testing
+
+For comprehensive testing documentation, see [TESTING.md](./TESTING.md).
+
+```bash
+# Run all tests (unit + E2E)
+pnpm test
+
+# Run unit tests only
+pnpm test:unit
+
+# Run E2E tests only
+pnpm test:e2e
+
+# Run API tests
+pnpm --filter api test
+
+# Run Web tests
+pnpm --filter web test
+
+# Run tests in watch mode
+pnpm --filter api test:watch
+pnpm --filter web test:unit:watch
+```
+
+#### Test Database Setup
+
+For running tests that require a database:
+
+```bash
+# Start test database
+./scripts/test-db.sh
+
+# Run tests
+pnpm test:unit
+
+# Stop test database
+./scripts/test-db-down.sh
+```
+
+**Testing Stack:**
+
+- Vitest + Supertest for API tests
+- React Testing Library for component tests
+- Playwright for end-to-end tests
 
 ## 🛠️ Technology Stack
 
@@ -166,6 +215,10 @@ pnpm format:check
 - **Git Hooks**: Husky (pre-commit linting)
 - **Database**: PostgreSQL (via Docker)
 - **DB Admin**: pgAdmin
+- **Testing**: Vitest, React Testing Library, Playwright
+- **Logging**: Winston
+- **Monitoring**: Sentry
+- **CI/CD**: GitHub Actions
 
 ## 🗄️ Database Setup
 
@@ -337,6 +390,20 @@ Husky is configured with pre-commit hooks:
 ## 📝 License
 
 MIT
+
+## 🚀 Deployment
+
+For production deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+Topics covered:
+
+- Environment variable configuration
+- Building for production (Next.js standalone + Express bundle)
+- Database migrations with Prisma
+- Stripe webhook configuration
+- Hosting options (Vercel, Railway, Render, Docker)
+- Monitoring and logging setup
+- CI/CD pipeline
 
 ## 🤝 Contributing
 

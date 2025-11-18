@@ -12,6 +12,8 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET || '',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  logLevel: process.env.LOG_LEVEL || 'info',
+  sentryDsn: process.env.SENTRY_DSN || '',
 };
 
 export const isDevelopment = env.nodeEnv === 'development';

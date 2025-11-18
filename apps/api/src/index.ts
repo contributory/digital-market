@@ -3,12 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import { env } from './config/env';
+import { initSentry } from './config/sentry';
+import logger from './config/logger';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import healthRouter from './routes/health';
 import authRouter from './routes/auth';
 import productsRouter from './routes/products';
 import categoriesRouter from './routes/categories';
 import accountRouter from './routes/account';
+
+initSentry();
 
 const app = express();
 
@@ -32,7 +36,13 @@ app.use('/account', accountRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(env.port, () => {
-  console.log(`🚀 API server running on ${env.apiUrl}`);
-  console.log(`📝 Environment: ${env.nodeEnv}`);
-});
+let server: ReturnType<typeof app.listen> | undefined;
+
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(env.port, () => {
+    logger.info(`🚀 API server running on ${env.apiUrl}`);
+    logger.info(`📝 Environment: ${env.nodeEnv}`);
+  });
+}
+
+export { app, server };
