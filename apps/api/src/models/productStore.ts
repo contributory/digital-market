@@ -5,13 +5,20 @@ import {
   ProductFilters,
   ProductSort,
   RatingDistribution,
+  UserReview,
+  ReviewModerationStatus,
 } from '@repo/shared';
 import { v4 as uuidv4 } from 'uuid';
+
+interface StoredReview extends Review {
+  moderationStatus: ReviewModerationStatus;
+}
 
 class ProductStore {
   private categories: Map<string, Category> = new Map();
   private products: Map<string, Product> = new Map();
-  private reviews: Map<string, Review> = new Map();
+  private reviews: Map<string, StoredReview> = new Map();
+  private userReviewIndex: Map<string, Set<string>> = new Map();
 
   constructor() {
     this.seedData();
@@ -359,7 +366,7 @@ class ProductStore {
     });
 
     // Seed some reviews
-    const reviews: Review[] = [
+    const reviews: StoredReview[] = [
       {
         id: 'rev-1',
         productId: 'prod-1',
@@ -371,6 +378,7 @@ class ProductStore {
           'These headphones are amazing. The noise cancellation works perfectly and the battery life is incredible.',
         verified: true,
         helpful: 23,
+        moderationStatus: ReviewModerationStatus.APPROVED,
         createdAt: now,
         updatedAt: now,
       },
@@ -385,6 +393,7 @@ class ProductStore {
           'Love the sound quality and comfort, but I think the price is a bit high for what you get.',
         verified: true,
         helpful: 15,
+        moderationStatus: ReviewModerationStatus.APPROVED,
         createdAt: now,
         updatedAt: now,
       },
@@ -399,12 +408,18 @@ class ProductStore {
           'The ultra-wide screen is a game changer. Colors are vibrant and the refresh rate is smooth.',
         verified: true,
         helpful: 34,
+        moderationStatus: ReviewModerationStatus.APPROVED,
         createdAt: now,
         updatedAt: now,
       },
     ];
 
-    reviews.forEach((review) => this.reviews.set(review.id, review));
+    reviews.forEach((review) => {
+      this.reviews.set(review.id, review);
+      const userReviews = this.userReviewIndex.get(review.userId) || new Set();
+      userReviews.add(review.id);
+      this.userReviewIndex.set(review.userId, userReviews);
+    });
   }
 
   // Categories
@@ -561,7 +576,7 @@ class ProductStore {
     comment: string
   ): Review {
     const now = new Date().toISOString();
-    const review: Review = {
+    const review: StoredReview = {
       id: uuidv4(),
       productId,
       userId,
@@ -571,11 +586,16 @@ class ProductStore {
       comment,
       verified: false,
       helpful: 0,
+      moderationStatus: ReviewModerationStatus.PENDING,
       createdAt: now,
       updatedAt: now,
     };
 
     this.reviews.set(review.id, review);
+
+    const userReviews = this.userReviewIndex.get(userId) || new Set();
+    userReviews.add(review.id);
+    this.userReviewIndex.set(userId, userReviews);
 
     // Update product rating and review count
     const product = this.products.get(productId);
@@ -588,7 +608,99 @@ class ProductStore {
       product.reviewCount = allReviews.length;
     }
 
-    return review;
+    const { moderationStatus: _, ...reviewWithoutModeration } = review;
+    return reviewWithoutModeration;
+  }
+
+  getUserReviews(userId: string): UserReview[] {
+    const reviewIds = this.userReviewIndex.get(userId) || new Set();
+    return Array.from(reviewIds)
+      .map((id) => {
+        const review = this.reviews.get(id);
+        if (!review) return null;
+
+        const product = this.products.get(review.productId);
+        if (!product) return null;
+
+        const userReview: UserReview = {
+          ...review,
+          productName: product.name,
+          productImage: product.images[0] || '',
+        };
+        return userReview;
+      })
+      .filter((review): review is UserReview => review !== null)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  }
+
+  getReviewById(reviewId: string): StoredReview | undefined {
+    return this.reviews.get(reviewId);
+  }
+
+  updateReview(
+    reviewId: string,
+    userId: string,
+    updates: { rating: number; title: string; comment: string }
+  ): UserReview | null {
+    const review = this.reviews.get(reviewId);
+    if (!review || review.userId !== userId) return null;
+
+    const updatedReview: StoredReview = {
+      ...review,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.reviews.set(reviewId, updatedReview);
+
+    const product = this.products.get(review.productId);
+    if (product) {
+      const allReviews = Array.from(this.reviews.values()).filter(
+        (r) => r.productId === review.productId
+      );
+      const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
+      product.rating = totalRating / allReviews.length;
+    }
+
+    if (!product) return null;
+
+    return {
+      ...updatedReview,
+      productName: product.name,
+      productImage: product.images[0] || '',
+    };
+  }
+
+  deleteReview(reviewId: string, userId: string): boolean {
+    const review = this.reviews.get(reviewId);
+    if (!review || review.userId !== userId) return false;
+
+    this.reviews.delete(reviewId);
+
+    const userReviews = this.userReviewIndex.get(userId);
+    if (userReviews) {
+      userReviews.delete(reviewId);
+    }
+
+    const product = this.products.get(review.productId);
+    if (product) {
+      const allReviews = Array.from(this.reviews.values()).filter(
+        (r) => r.productId === review.productId
+      );
+      if (allReviews.length > 0) {
+        const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
+        product.rating = totalRating / allReviews.length;
+        product.reviewCount = allReviews.length;
+      } else {
+        product.rating = 0;
+        product.reviewCount = 0;
+      }
+    }
+
+    return true;
   }
 }
 

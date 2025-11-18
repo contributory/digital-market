@@ -4,13 +4,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const searchParams = request.nextUrl.searchParams;
   const queryString = searchParams.toString();
 
   const response = await fetch(
-    `${API_URL}/products/${params.id}/reviews?${queryString}`,
+    `${API_URL}/products/${id}/reviews?${queryString}`,
     {
       headers: {
         'Content-Type': 'application/json',

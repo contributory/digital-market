@@ -8,6 +8,7 @@ import healthRouter from './routes/health';
 import authRouter from './routes/auth';
 import productsRouter from './routes/products';
 import categoriesRouter from './routes/categories';
+import accountRouter from './routes/account';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/health', healthRouter);
 app.use('/auth', authRouter);
 app.use('/products', productsRouter);
 app.use('/categories', categoriesRouter);
+app.use('/account', accountRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

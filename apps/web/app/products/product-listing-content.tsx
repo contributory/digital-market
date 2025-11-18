@@ -161,7 +161,7 @@ export function ProductListingContent() {
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="danger">
         <AlertDescription>
           <p className="mb-4">{error}</p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
