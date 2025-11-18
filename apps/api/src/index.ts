@@ -5,6 +5,7 @@ import compression from 'compression';
 import { env } from './config/env';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import healthRouter from './routes/health';
+import authRouter from './routes/auth';
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/health', healthRouter);
+app.use('/auth', authRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
