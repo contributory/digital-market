@@ -32,6 +32,28 @@ export const authenticate = (
   }
 };
 
+export const optionalAuth = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const decoded = verifyToken(token);
+      req.user = decoded;
+    }
+
+    next();
+  } catch (error) {
+    next();
+  }
+};
+
+export const requireAuth = authenticate;
+
 export const requireRole = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
