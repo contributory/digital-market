@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import {
   Menu,
-  ShoppingCart,
   User,
   LogOut,
   Settings,
@@ -14,7 +13,6 @@ import {
   Search as SearchIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,13 +22,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTheme } from '@/components/theme-provider';
 import { SearchBar } from './search-bar';
+import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer';
 
 interface HeaderProps {
   onMenuClick: () => void;
-  cartItemCount?: number;
 }
 
-export function Header({ onMenuClick, cartItemCount = 0 }: HeaderProps) {
+export function Header({ onMenuClick }: HeaderProps) {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const [showSearch, setShowSearch] = React.useState(false);
@@ -104,22 +102,7 @@ export function Header({ onMenuClick, cartItemCount = 0 }: HeaderProps) {
               )}
             </Button>
 
-            <Link
-              href="/cart"
-              aria-label={`Shopping cart with ${cartItemCount} items`}
-            >
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                {cartItemCount > 0 && (
-                  <Badge
-                    variant="danger"
-                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                  >
-                    {cartItemCount > 9 ? '9+' : cartItemCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
+            <MiniCartDrawer />
 
             {session ? (
               <DropdownMenu>

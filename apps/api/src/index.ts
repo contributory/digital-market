@@ -8,6 +8,8 @@ import healthRouter from './routes/health';
 import authRouter from './routes/auth';
 import productsRouter from './routes/products';
 import categoriesRouter from './routes/categories';
+import cartRouter from './routes/cart';
+import checkoutRouter from './routes/checkout';
 
 const app = express();
 
@@ -19,6 +21,9 @@ app.use(
   })
 );
 app.use(compression());
+
+app.use('/checkout/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -26,6 +31,8 @@ app.use('/health', healthRouter);
 app.use('/auth', authRouter);
 app.use('/products', productsRouter);
 app.use('/categories', categoriesRouter);
+app.use('/cart', cartRouter);
+app.use('/checkout', checkoutRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

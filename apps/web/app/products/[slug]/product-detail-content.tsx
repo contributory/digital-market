@@ -22,6 +22,7 @@ import { RatingDistribution } from '@/components/product/rating-distribution';
 import { ProductSkeleton } from '@/components/product/product-skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import { useCart } from '@/lib/hooks/useCart';
 
 interface ProductDetailContentProps {
   product: Product;
@@ -30,6 +31,7 @@ interface ProductDetailContentProps {
 export function ProductDetailContent({ product }: ProductDetailContentProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
+  const { addToCart, isAddingToCart } = useCart();
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [optimisticReviews, addOptimisticReview] = useOptimistic(
@@ -45,7 +47,6 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
   });
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [addingToCart, setAddingToCart] = useState(false);
 
   const hasDiscount =
     product.compareAtPrice && product.compareAtPrice > product.price;
@@ -107,25 +108,25 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
     fetchData();
   }, [product.id]);
 
-  const handleAddToCart = async () => {
-    setAddingToCart(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      toast({
-        title: 'Added to cart',
-        description: `${product.name} has been added to your cart.`,
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to add item to cart',
-        variant: 'destructive',
-      });
-    } finally {
-      setAddingToCart(false);
-    }
+  const handleAddToCart = () => {
+    addToCart(
+      { productId: product.id, quantity: 1 },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Added to cart',
+            description: `${product.name} has been added to your cart.`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: 'Error',
+            description: error.message || 'Failed to add item to cart',
+            variant: 'destructive',
+          });
+        },
+      }
+    );
   };
 
   const handleReviewSubmit = () => {
@@ -224,9 +225,9 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
               size="lg"
               className="flex-1"
               onClick={handleAddToCart}
-              disabled={product.stock === 0 || addingToCart}
+              disabled={product.stock === 0 || isAddingToCart}
             >
-              {addingToCart ? 'Adding...' : 'Add to Cart'}
+              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
             </Button>
             <Button size="lg" variant="outline">
               ♡
