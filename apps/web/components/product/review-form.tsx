@@ -26,7 +26,7 @@ export function ReviewForm({ productId, onSubmitSuccess }: ReviewFormProps) {
       toast({
         title: 'Error',
         description: 'Title must be at least 3 characters long',
-        variant: 'destructive',
+        variant: 'danger',
       });
       return;
     }
@@ -35,7 +35,7 @@ export function ReviewForm({ productId, onSubmitSuccess }: ReviewFormProps) {
       toast({
         title: 'Error',
         description: 'Comment must be at least 10 characters long',
-        variant: 'destructive',
+        variant: 'danger',
       });
       return;
     }
@@ -79,7 +79,7 @@ export function ReviewForm({ productId, onSubmitSuccess }: ReviewFormProps) {
         title: 'Error',
         description:
           error instanceof Error ? error.message : 'Failed to submit review',
-        variant: 'destructive',
+        variant: 'danger',
       });
     } finally {
       setIsSubmitting(false);

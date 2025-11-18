@@ -1,7 +1,10 @@
-import { AuthUser, UserRole } from '@repo/shared';
+import { AuthUser, UserRole, UserProfile } from '@repo/shared';
 
 interface StoredUser extends AuthUser {
   passwordHash: string;
+  phone?: string;
+  marketingEmails: boolean;
+  marketingSms: boolean;
 }
 
 class UserStore {
@@ -33,6 +36,9 @@ class UserStore {
       name,
       role,
       passwordHash,
+      phone: undefined,
+      marketingEmails: false,
+      marketingSms: false,
       createdAt: now,
       updatedAt: now,
     };
@@ -46,6 +52,54 @@ class UserStore {
 
   async emailExists(email: string): Promise<boolean> {
     return this.emailIndex.has(email.toLowerCase());
+  }
+
+  async getProfile(id: string): Promise<UserProfile | null> {
+    const user = this.users.get(id);
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      marketingEmails: user.marketingEmails,
+      marketingSms: user.marketingSms,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
+  async updateProfile(
+    id: string,
+    updates: {
+      name?: string;
+      phone?: string;
+      marketingEmails?: boolean;
+      marketingSms?: boolean;
+    }
+  ): Promise<UserProfile | null> {
+    const user = this.users.get(id);
+    if (!user) return null;
+
+    const updatedUser = {
+      ...user,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.users.set(id, updatedUser);
+    return this.getProfile(id);
+  }
+
+  async updatePassword(id: string, passwordHash: string): Promise<boolean> {
+    const user = this.users.get(id);
+    if (!user) return false;
+
+    user.passwordHash = passwordHash;
+    user.updatedAt = new Date().toISOString();
+    this.users.set(id, user);
+    return true;
   }
 }
 

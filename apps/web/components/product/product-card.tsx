@@ -30,10 +30,7 @@ export function ProductCard({ product }: ProductCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           {hasDiscount && (
-            <Badge
-              variant="destructive"
-              className="absolute top-2 right-2 text-xs"
-            >
+            <Badge variant="danger" className="absolute top-2 right-2 text-xs">
               -{discountPercent}%
             </Badge>
           )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useOptimistic } from 'react';
+import React, { useState, useEffect, useOptimistic } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import {
@@ -14,7 +14,14 @@ import { ImageGallery } from '@/components/product/image-gallery';
 import { RatingStars } from '@/components/ui/rating-stars';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Breadcrumbs } from '@/components/ui/breadcrumbs';
+import {
+  Breadcrumbs,
+  BreadcrumbsList,
+  BreadcrumbsItem,
+  BreadcrumbsLink,
+  BreadcrumbsPage,
+  BreadcrumbsSeparator,
+} from '@/components/ui/breadcrumbs';
 import { ProductCard } from '@/components/product/product-card';
 import { ReviewList } from '@/components/product/review-list';
 import { ReviewForm } from '@/components/product/review-form';
@@ -121,7 +128,7 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
       toast({
         title: 'Error',
         description: 'Failed to add item to cart',
-        variant: 'destructive',
+        variant: 'danger',
       });
     } finally {
       setAddingToCart(false);
@@ -162,7 +169,24 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <Breadcrumbs items={breadcrumbItems} className="mb-6" />
+      <Breadcrumbs className="mb-6">
+        <BreadcrumbsList>
+          {breadcrumbItems.map((item, index) => (
+            <React.Fragment key={index}>
+              <BreadcrumbsItem>
+                {item.href ? (
+                  <BreadcrumbsLink href={item.href}>
+                    {item.label}
+                  </BreadcrumbsLink>
+                ) : (
+                  <BreadcrumbsPage>{item.label}</BreadcrumbsPage>
+                )}
+              </BreadcrumbsItem>
+              {index < breadcrumbItems.length - 1 && <BreadcrumbsSeparator />}
+            </React.Fragment>
+          ))}
+        </BreadcrumbsList>
+      </Breadcrumbs>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Image Gallery */}
@@ -191,7 +215,7 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
                 <span className="text-xl text-muted-foreground line-through">
                   ${product.compareAtPrice!.toFixed(2)}
                 </span>
-                <Badge variant="destructive">Save {discountPercent}%</Badge>
+                <Badge variant="danger">Save {discountPercent}%</Badge>
               </>
             )}
           </div>

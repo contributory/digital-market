@@ -2,9 +2,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const response = await fetch(`${API_URL}/products/${params.id}/related`, {
+  const { id } = await params;
+  const response = await fetch(`${API_URL}/products/${id}/related`, {
     headers: {
       'Content-Type': 'application/json',
     },
