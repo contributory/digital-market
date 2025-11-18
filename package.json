@@ -5,8 +5,13 @@
   "description": "Monorepo with Next.js and Express API",
   "scripts": {
     "dev": "pnpm --parallel --filter \"./apps/*\" dev",
-    "build": "pnpm --filter \"./apps/*\" build",
+    "build": "pnpm --filter \"./packages/*\" build && pnpm --filter \"./apps/*\" build",
+    "start": "pnpm --parallel --filter \"./apps/*\" start",
     "lint": "pnpm --filter \"./apps/*\" lint",
+    "type-check": "pnpm --filter \"./apps/*\" type-check",
+    "test": "pnpm --filter \"./apps/*\" test",
+    "test:unit": "pnpm --filter api test:unit && pnpm --filter web test:unit",
+    "test:e2e": "pnpm --filter web test:e2e",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "prepare": "husky"

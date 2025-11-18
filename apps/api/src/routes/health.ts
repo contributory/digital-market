@@ -5,7 +5,7 @@ const router = Router();
 
 router.get(
   '/',
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (_req, res) => {
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { isDevelopment } from '../config/env';
+import logger from '../config/logger';
+import { Sentry } from '../config/sentry';
 
 export class AppError extends Error {
   constructor(
@@ -21,6 +23,13 @@ export const errorHandler = (
   _next: NextFunction
 ) => {
   if (err instanceof AppError) {
+    logger.warn('Operational error', {
+      statusCode: err.statusCode,
+      message: err.message,
+      url: req.originalUrl,
+      method: req.method,
+    });
+
     return res.status(err.statusCode).json({
       status: 'error',
       message: err.message,
@@ -29,6 +38,12 @@ export const errorHandler = (
   }
 
   if (err instanceof ZodError) {
+    logger.warn('Validation error', {
+      errors: err.errors,
+      url: req.originalUrl,
+      method: req.method,
+    });
+
     return res.status(400).json({
       status: 'error',
       message: 'Validation error',
@@ -36,7 +51,16 @@ export const errorHandler = (
     });
   }
 
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error', {
+    error: err.message,
+    stack: err.stack,
+    url: req.originalUrl,
+    method: req.method,
+  });
+
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(err);
+  }
 
   return res.status(500).json({
     status: 'error',
